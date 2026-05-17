@@ -1,67 +1,151 @@
 import '../core/models/voice_profile.dart';
 
 class RuleBasedSpeechTrainer {
-  static const double PASS_PHONEME_ACCURACY = 8.0;
-  static const double PASS_PITCH_LOUDNESS = 7.0;
-  static const double PASS_VOICE_QUALITY = 6.5;
-  static const double PASS_INTELLIGIBILITY = 7.0;
+  static const List<int> allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-  Map<String, dynamic> generateInitialPlan(VoiceProfile profile, int age) {
-    final score = profile.overallScore;
-
-    String stage = "Stage1_VocalCardEcho";
-    String difficulty = "beginner";
-    int maxAttempts = 5;
-    int timeLimitSeconds = 75;
-    List<String> targetWords = ["one", "two"];
-
-    if (score >= 8.0) {
-      difficulty = "advanced";
-      maxAttempts = 3;
-      timeLimitSeconds = 60;
-      targetWords = ["one", "five", "ten", "two", "three"];
-    } else if (score >= 6.0) {
-      difficulty = "intermediate";
-      maxAttempts = 4;
-      timeLimitSeconds = 60;
-      targetWords = ["one", "two", "three", "four", "five"];
-    } else {
-      targetWords = ["one", "two"];
-    }
+  Map<String, dynamic> generateDynamicLearningPlan({
+    required VoiceProfile profile,
+    required List<Map<String, dynamic>> recentResults,
+    int age = 5,
+  }) {
+    final weakNumbers = _extractWeakNumbers(recentResults);
+    final targets = _getTargets(profile, weakNumbers);
 
     return {
-      "stage": stage,
-      "difficulty": difficulty,
-      "maxAttempts": maxAttempts,
-      "timeLimitSeconds": timeLimitSeconds,
-      "targetWords": targetWords,
-      "voiceProfileScore": profile.overallScore.toStringAsFixed(1),
-      "voiceProfilePercentage": profile.overallPercentage.toStringAsFixed(0),
-      "recommendedFeedback": _generateFeedback(profile),
+      "overallScore": profile.overallScore.toStringAsFixed(1),
+      "overallPercentage": profile.overallPercentage.toStringAsFixed(0),
+      "recommendedFeedback": _generateOverallFeedback(profile, weakNumbers),
+      "lastUpdated": DateTime.now().toIso8601String(),
+      "weakAreas": weakNumbers,
+
+      "activities": {
+        "vocal_card_echo": _generateVocalCardEchoPlan(profile, targets),
+        "number_pair_sequence": _generateNumberPairPlan(profile, targets),
+        "number_counting_quest": _generateCountingQuestPlan(profile, targets),
+      },
     };
   }
 
-  String _generateFeedback(VoiceProfile profile) {
-    final List<String> tips = [];
+  // ==================== TARGET LOGIC ====================
+  List<int> _getTargets(VoiceProfile profile, List<int> weakNumbers) {
+    if (weakNumbers.isNotEmpty) return weakNumbers;
 
-    if (profile.phonemeAccuracy < 8.0) {
-      tips.add("• Work on clearer pronunciation of difficult sounds.");
-    }
-    if (profile.pitch < 7.0) {
-      tips.add("• Keep your tone steady.");
-    }
-    if (profile.loudness < 7.0) {
-      tips.add("• Speak a bit louder.");
-    }
-    if (profile.voiceQuality < 6.5) {
-      tips.add("• Try to relax your voice.");
-    }
-    if (profile.intelligibility < 7.0) {
-      tips.add("• Pronounce words more clearly and separately.");
+    if (profile.overallScore >= 8.0) return [1,2,3,4,5,6,7];
+    if (profile.overallScore >= 6.5) return [1,2,3,4,5,6,7,8,9];
+    return [1,2,3,4,5,6,7,8,9,10];
+  }
+
+  // ==================== VOCAL CARD ====================
+  Map<String, dynamic> _generateVocalCardEchoPlan(
+      VoiceProfile profile, List<int> targets) {
+
+    return {
+      "stage": "Stage1_VocalCardEcho",
+      "activityType": "vocal_card_echo",
+      "difficulty": profile.overallScore >= 8.0
+          ? "advanced"
+          : profile.overallScore >= 6.0
+              ? "intermediate"
+              : "beginner",
+
+      "maxAttempts": profile.overallScore >= 8.0 ? 3 : 5,
+      "timeLimitSeconds": profile.overallScore >= 8.0 ? 60 : 75,
+
+      "targetNumbers": targets,
+      "targetWords": targets.map((n) => n.toString()).toList(),
+    };
+  }
+
+  // ==================== NUMBER PAIRS ====================
+  Map<String, dynamic> _generateNumberPairPlan(
+      VoiceProfile profile, List<int> targets) {
+
+    return {
+      "stage": "Stage2_NumberPairSequence",
+      "activityType": "number_pair_sequence",
+      "difficulty": profile.overallScore >= 8.0
+          ? "advanced"
+          : profile.overallScore >= 6.0
+              ? "intermediate"
+              : "beginner",
+
+      "maxAttempts": profile.overallScore >= 8.0 ? 2 : 4,
+      "timeLimitSeconds": profile.overallScore >= 8.0 ? 55 : 70,
+
+      "targetPairs": _generatePairs(targets),
+      "targetNumbers": targets,
+    };
+  }
+
+  // ==================== COUNTING QUEST ====================
+  Map<String, dynamic> _generateCountingQuestPlan(
+      VoiceProfile profile, List<int> targets) {
+
+    return {
+      "stage": "Stage3_NumberCountingQuest",
+      "activityType": "number_counting_quest",
+      "difficulty": profile.overallScore >= 7.5
+          ? "advanced"
+          : profile.overallScore >= 5.5
+              ? "intermediate"
+              : "beginner",
+
+      "maxAttempts": 4,
+      "timeLimitSeconds": 120,
+
+      "targetRange": "${targets.first}-${targets.last}",
+      "focusNumbers": targets,
+    };
+  }
+
+  // ==================== HELPERS ====================
+  List<int> _extractWeakNumbers(List<Map<String, dynamic>> results) {
+    Map<int, int> errorCount = {};
+
+    for (var r in results) {
+      String spoken = (r['spoken'] ?? '').toString().toLowerCase();
+      double score = (r['score'] ?? 0.0).toDouble();
+      bool correct = r['correct'] ?? false;
+
+      for (int num in allNumbers) {
+        if (spoken.contains(num.toString()) && (!correct || score < 0.65)) {
+          errorCount[num] = (errorCount[num] ?? 0) + 1;
+        }
+      }
     }
 
-    return tips.isEmpty
-        ? "Great voice profile! Keep practicing every day."
-        : tips.join("\n");
+    var sorted = errorCount.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sorted.map((e) => e.key).toList();
+  }
+
+  // ✅ IMPROVED: Better pair generation
+  List<String> _generatePairs(List<int> numbers) {
+    List<String> pairs = [];
+
+    // Consecutive pairs (best for learning)
+    for (int i = 0; i < numbers.length - 1; i++) {
+      pairs.add("${numbers[i]} - ${numbers[i + 1]}");
+    }
+
+    // Add a few skip pairs for extra practice
+    if (numbers.length >= 4) {
+      pairs.add("${numbers[0]} - ${numbers[2]}");
+      pairs.add("${numbers[1]} - ${numbers[3]}");
+      if (numbers.length >= 6) {
+        pairs.add("${numbers[2]} - ${numbers[5]}");
+      }
+    }
+
+    return pairs.toSet().toList(); // Remove any accidental duplicates
+  }
+
+  String _generateOverallFeedback(
+      VoiceProfile profile, List<int> weakNumbers) {
+    if (weakNumbers.isNotEmpty) {
+      return "Focus on: ${weakNumbers.join(", ")}";
+    }
+    return "Keep practicing!";
   }
 }

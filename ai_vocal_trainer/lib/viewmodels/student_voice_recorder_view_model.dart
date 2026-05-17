@@ -80,7 +80,7 @@ class StudentVoiceRecorderViewModel extends ChangeNotifier {
 
     try {
       final jsonString = await rootBundle.loadString(
-        'assets/ai-vocal-trainer-d40d5-c08a881eaeb5.json',
+        'assets/ai-vocal-trainer-d40d5-34c57811b188.json',
       );
 
       final serviceAccount = ServiceAccount.fromString(jsonString);

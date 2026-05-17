@@ -22,12 +22,29 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color softPink = const Color(0xFFFF6B9D);
 
-    final plan = learningPlan ?? {};
+    final fullPlan = learningPlan ?? {};
 
-    // ✅ ONLY keep target words
+    // === CRITICAL: Extract the specific activity plan ===
+    final Map<String, dynamic> vocalPlan = 
+        (fullPlan['activities'] as Map<String, dynamic>?)?['vocal_card_echo'] ?? fullPlan;
+
+    // Get targets for display
     final List<String> targetWords = List<String>.from(
-      plan['targetWords'] ?? plan['target_words'] ?? ['one', 'two', 'three'],
+      vocalPlan['targetWords'] ?? 
+      vocalPlan['targetNumbers']?.map((e) => e.toString()) ?? 
+      ['1', '2', '3']
     );
+
+   final Map<String, dynamic> pairPlan = 
+        (fullPlan['activities'] as Map<String, dynamic>?)?['number_pair_sequence'] 
+        ?? fullPlan;   // ←←← This is the key change
+
+    print("🔍 Pair Plan Loaded: $pairPlan");
+    print("🔍 Has targetPairs? ${pairPlan.containsKey('targetPairs')}");
+    print("🔍 Has targetNumbers? ${pairPlan.containsKey('targetNumbers')}");
+
+    print(" Targets being passed to Vocal Card Echo: $targetWords"); // Debug
+    print("🔍 Pair Plan Loaded: $pairPlan"); // Added for debugging
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -42,12 +59,7 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFB6D1),
-              Color(0xFFFFD6E6),
-              Color(0xFFFFF0F5),
-              Colors.white,
-            ],
+            colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
           ),
         ),
         child: SafeArea(
@@ -56,25 +68,16 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Practice Activities",
-                  style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: softPink),
-                ),
+                Text("Practice Activities", 
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: softPink)),
                 const SizedBox(height: 8),
-                Text(
-                  "Choose an activity for $studentName",
-                  style: const TextStyle(fontSize: 17, color: Colors.grey),
-                ),
+                Text("Choose an activity for $studentName", 
+                    style: const TextStyle(fontSize: 17, color: Colors.grey)),
                 const SizedBox(height: 40),
 
-                // ✅ UPDATED CARD
                 _buildActivityCard(
-                  title: "Vocal Card Echo",
-                  subtitle:
-                      "Practice: ${targetWords.join(" • ")}",
+                  title: "1. Vocal Card Echo",
+                  subtitle: "Target: ${targetWords.join(" • ")}",
                   icon: Icons.record_voice_over,
                   onTap: () {
                     Navigator.push(
@@ -82,9 +85,31 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => VocalCardEchoPage(
                           studentName: studentName,
-                          targetWords: targetWords,
-                          className: className,
                           studentId: studentId,
+                          className: className,
+                          plan: vocalPlan,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // Number Pair Sequence
+                _buildActivityCard(
+                  title: "2. Number Pair Sequence",
+                  subtitle: "Practice listening and repeating pairs",
+                  icon: Icons.repeat,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NumberPairSequencePage(
+                          studentName: studentName,
+                          studentId: studentId,
+                          className: className,
+                          plan: pairPlan,
                         ),
                       ),
                     );
@@ -94,40 +119,11 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 _buildActivityCard(
-  title: "Number Pair Sequence",
-  subtitle:
-      "Listen, repeat, and level up your number skills!",
-  icon: Icons.repeat,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => NumberPairSequencePage(
-          studentName: studentName,
-        ),
-      ),
-    );
-  },
-),
-
-                const SizedBox(height: 16),
-
-                _buildActivityCard(
-  title: "Number Counting Quest",
-  subtitle:
-      "Challenge yourself to count and level up your voice skills!",
-  icon: Icons.emoji_events,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => NumberCountingQuestPage(
-          studentName: studentName,
-        ),
-      ),
-    );
-  },
-),
+                  title: "3. Number Counting Quest",
+                  subtitle: "Count numbers in sequence",
+                  icon: Icons.emoji_events,
+                  onTap: () { /* TODO */ },
+                ),
               ],
             ),
           ),
@@ -136,6 +132,7 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
     );
   }
 
+  // _buildActivityCard remains unchanged...
   Widget _buildActivityCard({
     required String title,
     required String subtitle,
@@ -143,7 +140,6 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     final Color softPink = const Color(0xFFFF6B9D);
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -151,13 +147,7 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 6))],
         ),
         child: Row(
           children: [
@@ -174,18 +164,13 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
-                  Text(subtitle,
-                      style: TextStyle(
-                          fontSize: 14.5, color: Colors.grey[600])),
+                  Text(subtitle, style: TextStyle(fontSize: 14.5, color: Colors.grey[600])),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded,
-                color: softPink, size: 20),
+            Icon(Icons.arrow_forward_ios_rounded, color: softPink, size: 20),
           ],
         ),
       ),

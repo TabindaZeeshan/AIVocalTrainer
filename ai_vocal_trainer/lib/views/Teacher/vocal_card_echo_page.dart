@@ -1,5 +1,5 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodels/student_voice_recorder_view_model.dart';
@@ -7,16 +7,16 @@ import 'vocal_echo_result_page.dart';
 
 class VocalCardEchoPage extends StatefulWidget {
   final String studentName;
-  final List<String> targetWords;
-  final String className;
   final String studentId;
+  final String className;
+  final Map<String, dynamic> plan;
 
   const VocalCardEchoPage({
     super.key,
     required this.studentName,
-    required this.targetWords,
-    required this.className,
     required this.studentId,
+    required this.className,
+    required this.plan,
   });
 
   @override
@@ -26,18 +26,40 @@ class VocalCardEchoPage extends StatefulWidget {
 class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
+  late List<String> targetWords;
   int currentWordIndex = 0;
   int totalAttemptsMade = 0;
   int correctCount = 0;
-
-  String feedback = "Tap Play then Record";
-  bool isPlaying = false;
-  bool hasEvaluated = false;
-
   List<Map<String, dynamic>> results = [];
 
-  String get currentWord => widget.targetWords[currentWordIndex];
-  bool get isLastWord => currentWordIndex == widget.targetWords.length - 1;
+  String feedback = "Tap Play to listen";
+  bool isPlaying = false;
+
+  String get currentWord => targetWords[currentWordIndex];
+  bool get isLastWord => currentWordIndex == targetWords.length - 1;
+
+  final Map<String, String> numberToFilename = {
+    '1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five',
+    '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Safe extraction from Learning Plan
+    List<dynamic> rawTargets = widget.plan['targetNumbers'] ?? 
+                              widget.plan['targetWords'] ?? 
+                              [1, 2, 3];
+
+    targetWords = rawTargets.map((e) => e.toString()).toList();
+
+    if (targetWords.isEmpty) {
+      targetWords = ['1', '2', '3'];
+    }
+
+    print(" Loaded Targets from Plan: $targetWords");
+  }
 
   @override
   void dispose() {
@@ -45,149 +67,97 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
     super.dispose();
   }
 
-  // 🔹 TEXT CLEANING (UNCHANGED)
-  String cleanText(String text) {
-    return text
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^\w\s]'), '')
-        .replaceAll(RegExp(r'\d+'), '')
-        .trim();
-  }
-
-  String normalize(String text) {
-    return cleanText(text)
-        .split(' ')
-        .where((w) => w.isNotEmpty)
-        .join(' ');
-  }
-
-  // 🔊 PLAY AUDIO (UNCHANGED)
   Future<void> _playPrompt() async {
     if (isPlaying) return;
-
-    setState(() {
-      isPlaying = true;
-      feedback = "Playing...";
-    });
+    setState(() { isPlaying = true; feedback = "  ${currentWord}..."; });
 
     try {
-      final path = 'assets/sounds/${currentWord.toLowerCase()}.mp3';
-      await _audioPlayer.setAsset(path);
-      await _audioPlayer.play();
-
-      setState(() {
-        feedback = "Say: ${currentWord.toUpperCase()}";
-      });
+      String fileName = numberToFilename[currentWord] ?? currentWord.toLowerCase();
+      await _audioPlayer.play(AssetSource('sounds/$fileName.mp3'));
+      setState(() => feedback = "Repeat: ${currentWord}");
     } catch (e) {
-      setState(() => feedback = "Audio not found");
+      print(" Audio Error: $e");
+      setState(() => feedback = " Audio missing for $currentWord");
     } finally {
       setState(() => isPlaying = false);
     }
   }
 
-  // 🎤 RECORDING (UNCHANGED)
   void _startRecording(StudentVoiceRecorderViewModel vm) async {
     if (vm.isRecording || vm.isProcessing) return;
-
     vm.reset();
-    hasEvaluated = false;
-
     await vm.startRecording();
-
-    setState(() {
-      feedback = "Recording...";
-    });
+    setState(() => feedback = " Recording... Speak clearly");
   }
 
   void _stopRecording(StudentVoiceRecorderViewModel vm) async {
     if (!vm.isRecording) return;
-
     await vm.stopRecording();
-
-    if (!hasEvaluated) {
-      hasEvaluated = true;
-      _evaluate(vm);
-    }
+    _evaluate(vm);
   }
 
-  // 🧠 SIMILARITY (UNCHANGED)
-  double _similarity(String a, String b) {
-    int maxLen = a.length > b.length ? a.length : b.length;
-    if (maxLen == 0) return 1;
+  String normalize(String text) => text.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').trim();
 
-    int distance = _levenshtein(a, b);
-    return 1 - (distance / maxLen);
-  }
-
-  int _levenshtein(String s1, String s2) {
-    List<List<int>> dp = List.generate(
-      s1.length + 1,
-      (_) => List.filled(s2.length + 1, 0),
-    );
-
-    for (int i = 0; i <= s1.length; i++) dp[i][0] = i;
-    for (int j = 0; j <= s2.length; j++) dp[0][j] = j;
-
-    for (int i = 1; i <= s1.length; i++) {
-      for (int j = 1; j <= s2.length; j++) {
-        int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
-
-        dp[i][j] = [
-          dp[i - 1][j] + 1,
-          dp[i][j - 1] + 1,
-          dp[i - 1][j - 1] + cost,
-        ].reduce((a, b) => a < b ? a : b);
-      }
-    }
-
-    return dp[s1.length][s2.length];
-  }
-
-  // 🧠 EVALUATION (UNCHANGED)
   void _evaluate(StudentVoiceRecorderViewModel vm) {
     final spoken = normalize(vm.transcription);
-    final target = cleanText(currentWord);
+    final target = normalize(currentWord);
 
     totalAttemptsMade++;
-
     double score = _similarity(spoken, target);
-    bool correct = spoken.contains(target) || score >= 0.5;
+    bool correct = spoken.contains(target) || score >= 0.55;
 
     if (correct) correctCount++;
 
     results.add({
       "word": target,
-      "spoken": spoken,
+      "spoken": spoken.isEmpty ? "(no speech detected)" : spoken,
       "score": score,
       "correct": correct,
     });
 
     setState(() {
       feedback = correct
-          ? "Correct! ${(score * 100).toStringAsFixed(0)}%"
-          : "You said: $spoken (${(score * 100).toStringAsFixed(0)}%)";
+          ? " Excellent! ${(score * 100).toStringAsFixed(0)}%"
+          : " You said: '$spoken'";
     });
   }
 
-  void _next() {
-    setState(() {
-      currentWordIndex++;
-      feedback = "Next word";
-    });
+  double _similarity(String a, String b) {
+    if (a.isEmpty || b.isEmpty) return 0.0;
+    int maxLen = a.length > b.length ? a.length : b.length;
+    return 1 - (_levenshtein(a, b) / maxLen);
   }
+
+  int _levenshtein(String s1, String s2) {
+    List<List<int>> dp = List.generate(s1.length + 1, (_) => List.filled(s2.length + 1, 0));
+    for (int i = 0; i <= s1.length; i++) dp[i][0] = i;
+    for (int j = 0; j <= s2.length; j++) dp[0][j] = j;
+    for (int i = 1; i <= s1.length; i++) {
+      for (int j = 1; j <= s2.length; j++) {
+        int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+        dp[i][j] = [dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost]
+            .reduce((a, b) => a < b ? a : b);
+      }
+    }
+    return dp[s1.length][s2.length];
+  }
+
+  void _next() => setState(() { currentWordIndex++; feedback = "Ready for next word"; });
 
   void _finish() {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => VocalEchoResultPage(
           studentName: widget.studentName,
-          targetWords: widget.targetWords,
+          studentId: widget.studentId,
+          className: widget.className,
+          targetWords: targetWords,
           totalAttempts: totalAttemptsMade,
           correctAnswers: correctCount,
           results: results,
-          className: widget.className,
-          studentId: widget.studentId,
+          activityType: "vocal_card_echo",
+          plan: widget.plan,
         ),
       ),
     );
@@ -196,7 +166,6 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
   @override
   Widget build(BuildContext context) {
     final Color softPink = const Color(0xFFFF6B9D);
-    final Color lightPinkBg = const Color(0xFFFFF0F5);
 
     return ChangeNotifierProvider(
       create: (_) => StudentVoiceRecorderViewModel(
@@ -209,165 +178,127 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              title: const Text("Vocal Echo"),
+              title: const Text("Vocal Card Echo"),
               backgroundColor: Colors.transparent,
               elevation: 0,
               foregroundColor: Colors.white,
             ),
-
             body: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFFFB6D1),
-                    Color(0xFFFFD6E6),
-                    Color(0xFFFFF0F5),
-                    Colors.white,
-                  ],
+                  colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
                 ),
               ),
-
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      // 📊 PROGRESS CARD
+                      // Progress
                       Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 15,
-                              offset: const Offset(0, 6),
-                            )
-                          ],
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15)],
                         ),
                         child: Text(
-                          "Word ${currentWordIndex + 1} / ${widget.targetWords.length}",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          "Word ${currentWordIndex + 1} of ${targetWords.length}",
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
+                      const SizedBox(height: 24),
 
-                      const SizedBox(height: 18),
-
-                      // 🟣 WORD CARD
+                      // Big Target Number
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(28),
+                        padding: const EdgeInsets.all(40),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 15,
-                              offset: const Offset(0, 6),
-                            )
-                          ],
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15)],
                         ),
                         child: Text(
                           currentWord,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 42,
+                            fontSize: 68,
                             fontWeight: FontWeight.bold,
                             color: softPink,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 24),
 
-                      // 💬 FEEDBACK CARD
+                      // Feedback
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                            )
-                          ],
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12)],
                         ),
                         child: Text(
                           feedback,
                           textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 18, height: 1.4),
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const Spacer(),
 
-                      // 🔘 BUTTONS
+                      // Buttons
                       Row(
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: _playPrompt,
                               icon: const Icon(Icons.volume_up),
-                              label: const Text("Play"),
+                              label: const Text("Play", style: TextStyle(color: Colors.white)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: softPink,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                padding: const EdgeInsets.all(14),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: vm.isRecording
-                                  ? () => _stopRecording(vm)
-                                  : () => _startRecording(vm),
-                              icon: Icon(
-                                  vm.isRecording ? Icons.stop : Icons.mic),
-                              label: Text(
-                                  vm.isRecording ? "Stop" : "Record"),
+                              onPressed: vm.isRecording ? () => _stopRecording(vm) : () => _startRecording(vm),
+                              icon: Icon(vm.isRecording ? Icons.stop : Icons.mic),
+                              label: Text(vm.isRecording ? "Stop" : "Record", style: const TextStyle(color: Colors.white)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: vm.isRecording
-                                    ? Colors.red
-                                    : softPink,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                padding: const EdgeInsets.all(14),
+                                backgroundColor: vm.isRecording ? Colors.red : softPink,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                               ),
                             ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 20),
-
-                      // NEXT / FINISH
-                      if (!vm.isRecording &&
-                          vm.transcription.isNotEmpty)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: isLastWord ? _finish : _next,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: softPink,
-                              padding: const EdgeInsets.all(16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                      if (!vm.isRecording && vm.transcription.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: isLastWord ? _finish : _next,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: softPink,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                              ),
+                              child: Text(
+                                isLastWord ? "Finish Activity" : "Next Word",
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
-                            child: Text(isLastWord ? "Finish" : "Next"),
                           ),
                         ),
                     ],

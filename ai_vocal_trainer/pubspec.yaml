@@ -44,6 +44,7 @@ dependencies:
   cloud_firestore: ^6.2.0
   just_audio: ^0.10.5
   speech_to_text: ^7.3.0
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -99,8 +100,18 @@ flutter:
   # see https://flutter.dev/to/font-from-package
   assets:
     - assets/images/Logo.png
-    - assets/ai-vocal-trainer-d40d5-c08a881eaeb5.json
+    - assets/ai-vocal-trainer-d40d5-34c57811b188.json
     - assets/sounds/
+    - assets/sounds/one.mp3
+    - assets/sounds/two.mp3
+    - assets/sounds/three.mp3
+    - assets/sounds/four.mp3
+    - assets/sounds/five.mp3
+    - assets/sounds/six.mp3
+    - assets/sounds/seven.mp3
+    - assets/sounds/eight.mp3
+    - assets/sounds/nine.mp3
+    - assets/sounds/ten.mp3
 dependency_overrides:
   record_platform_interface: ^1.5.0
   record_linux: ^1.1.0   # Newer version that should fix the interface

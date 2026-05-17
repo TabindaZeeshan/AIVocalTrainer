@@ -2,27 +2,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'student_practice_activites_page.dart';
 
-class VocalEchoResultPage extends StatelessWidget {
+class NumberPairResultPage extends StatelessWidget {
   final String studentName;
   final String studentId;
   final String className;
-  final List<String> targetWords;
+  final List<String> targetPairs;
   final int totalAttempts;
   final int correctAnswers;
   final List<Map<String, dynamic>> results;
-  final String activityType;
   final Map<String, dynamic>? plan;
 
-  const VocalEchoResultPage({
+  const NumberPairResultPage({
     super.key,
     required this.studentName,
     required this.studentId,
     required this.className,
-    required this.targetWords,
+    required this.targetPairs,
     required this.totalAttempts,
     required this.correctAnswers,
     required this.results,
-    required this.activityType,
     this.plan,
   });
 
@@ -30,7 +28,6 @@ class VocalEchoResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color softPink = const Color(0xFFFF6B9D);
 
-    // Auto save
     WidgetsBinding.instance.addPostFrameCallback((_) => _saveToFirestore());
 
     return Scaffold(
@@ -148,14 +145,15 @@ class VocalEchoResultPage extends StatelessWidget {
         'studentId': studentId,
         'studentName': studentName,
         'className': className,
-        'activityType': activityType,
-        'targetWords': targetWords,
+        'activityType': 'number_pair_sequence',
+        'targetPairs': targetPairs,
         'totalAttempts': totalAttempts,
         'correctAnswers': correctAnswers,
         'results': results,
         'plan': plan,
         'recordedAt': FieldValue.serverTimestamp(),
       });
+      print("Number Pair Results Saved!");
     } catch (e) {
       print("Save failed: $e");
     }
@@ -198,15 +196,24 @@ class VocalEchoResultPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item['word'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  item['pair'] ?? "Pair",
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 6),
-                Text("You said: ${item['spoken']}", style: TextStyle(color: Colors.grey[700], fontSize: 15)),
+                Text(
+                  "You said: ${item['spoken']}",
+                  style: TextStyle(color: Colors.grey[700], fontSize: 15),
+                ),
               ],
             ),
           ),
           Text(
-            "${(item['score'] * 100).toStringAsFixed(0)}%",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: softPink),
+            correct ? "Correct" : "Incorrect",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: correct ? Colors.green : Colors.red,
+            ),
           ),
         ],
       ),
