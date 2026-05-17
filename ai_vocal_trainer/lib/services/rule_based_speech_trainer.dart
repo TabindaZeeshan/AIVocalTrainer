@@ -21,7 +21,7 @@ class RuleBasedSpeechTrainer {
       "activities": {
         "vocal_card_echo": _generateVocalCardEchoPlan(profile, targets),
         "number_pair_sequence": _generateNumberPairPlan(profile, targets),
-        "number_counting_quest": _generateCountingQuestPlan(profile, targets),
+        "number_counting_quest": _generateCountingQuestPlan(profile, targets, weakNumbers),
       },
     };
   }
@@ -30,27 +30,20 @@ class RuleBasedSpeechTrainer {
   List<int> _getTargets(VoiceProfile profile, List<int> weakNumbers) {
     if (weakNumbers.isNotEmpty) return weakNumbers;
 
-    if (profile.overallScore >= 8.0) return [1,2,3,4,5,6,7];
-    if (profile.overallScore >= 6.5) return [1,2,3,4,5,6,7,8,9];
-    return [1,2,3,4,5,6,7,8,9,10];
+    if (profile.overallScore >= 8.0) return [1, 2, 3, 4, 5, 6, 7];
+    if (profile.overallScore >= 6.5) return [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   }
 
   // ==================== VOCAL CARD ====================
   Map<String, dynamic> _generateVocalCardEchoPlan(
       VoiceProfile profile, List<int> targets) {
-
     return {
       "stage": "Stage1_VocalCardEcho",
       "activityType": "vocal_card_echo",
-      "difficulty": profile.overallScore >= 8.0
-          ? "advanced"
-          : profile.overallScore >= 6.0
-              ? "intermediate"
-              : "beginner",
-
+      "difficulty": profile.overallScore >= 8.0 ? "advanced" : profile.overallScore >= 6.0 ? "intermediate" : "beginner",
       "maxAttempts": profile.overallScore >= 8.0 ? 3 : 5,
       "timeLimitSeconds": profile.overallScore >= 8.0 ? 60 : 75,
-
       "targetNumbers": targets,
       "targetWords": targets.map((n) => n.toString()).toList(),
     };
@@ -59,42 +52,53 @@ class RuleBasedSpeechTrainer {
   // ==================== NUMBER PAIRS ====================
   Map<String, dynamic> _generateNumberPairPlan(
       VoiceProfile profile, List<int> targets) {
-
     return {
       "stage": "Stage2_NumberPairSequence",
       "activityType": "number_pair_sequence",
-      "difficulty": profile.overallScore >= 8.0
-          ? "advanced"
-          : profile.overallScore >= 6.0
-              ? "intermediate"
-              : "beginner",
-
+      "difficulty": profile.overallScore >= 8.0 ? "advanced" : profile.overallScore >= 6.0 ? "intermediate" : "beginner",
       "maxAttempts": profile.overallScore >= 8.0 ? 2 : 4,
       "timeLimitSeconds": profile.overallScore >= 8.0 ? 55 : 70,
-
       "targetPairs": _generatePairs(targets),
       "targetNumbers": targets,
     };
   }
 
-  // ==================== COUNTING QUEST ====================
+  // ==================== COUNTING QUEST (UPDATED & MORE DYNAMIC) ====================
   Map<String, dynamic> _generateCountingQuestPlan(
-      VoiceProfile profile, List<int> targets) {
+      VoiceProfile profile, List<int> targets, List<int> weakNumbers) {
+
+    // Use weak numbers first if available, otherwise use main targets
+    final focusList = weakNumbers.isNotEmpty ? weakNumbers : targets;
+
+    // Adjust difficulty and attempts based on performance
+    String difficulty;
+    int maxAttempts;
+    int timeLimit;
+
+    if (profile.overallScore >= 8.0) {
+      difficulty = "advanced";
+      maxAttempts = 3;
+      timeLimit = 100;
+    } else if (profile.overallScore >= 6.0) {
+      difficulty = "intermediate";
+      maxAttempts = 4;
+      timeLimit = 120;
+    } else {
+      difficulty = "beginner";
+      maxAttempts = 5;
+      timeLimit = 150;
+    }
 
     return {
       "stage": "Stage3_NumberCountingQuest",
       "activityType": "number_counting_quest",
-      "difficulty": profile.overallScore >= 7.5
-          ? "advanced"
-          : profile.overallScore >= 5.5
-              ? "intermediate"
-              : "beginner",
+      "difficulty": difficulty,
+      "maxAttempts": maxAttempts,
+      "timeLimitSeconds": timeLimit,
 
-      "maxAttempts": 4,
-      "timeLimitSeconds": 120,
-
-      "targetRange": "${targets.first}-${targets.last}",
-      "focusNumbers": targets,
+      "targetRange": "${focusList.first}-${focusList.last}",
+      "focusNumbers": focusList,
+      "recommendedSequence": focusList,   // For future use
     };
   }
 
@@ -120,25 +124,19 @@ class RuleBasedSpeechTrainer {
     return sorted.map((e) => e.key).toList();
   }
 
-  // ✅ IMPROVED: Better pair generation
   List<String> _generatePairs(List<int> numbers) {
     List<String> pairs = [];
 
-    // Consecutive pairs (best for learning)
     for (int i = 0; i < numbers.length - 1; i++) {
       pairs.add("${numbers[i]} - ${numbers[i + 1]}");
     }
 
-    // Add a few skip pairs for extra practice
     if (numbers.length >= 4) {
       pairs.add("${numbers[0]} - ${numbers[2]}");
       pairs.add("${numbers[1]} - ${numbers[3]}");
-      if (numbers.length >= 6) {
-        pairs.add("${numbers[2]} - ${numbers[5]}");
-      }
     }
 
-    return pairs.toSet().toList(); // Remove any accidental duplicates
+    return pairs.toSet().toList();
   }
 
   String _generateOverallFeedback(

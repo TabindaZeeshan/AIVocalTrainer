@@ -24,27 +24,30 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
 
     final fullPlan = learningPlan ?? {};
 
-    // === CRITICAL: Extract the specific activity plan ===
-    final Map<String, dynamic> vocalPlan = 
-        (fullPlan['activities'] as Map<String, dynamic>?)?['vocal_card_echo'] ?? fullPlan;
+    // === SAFE EXTRACTION OF ALL PLANS ===
+    final Map<String, dynamic> activities = 
+        (fullPlan['activities'] as Map<String, dynamic>?) ?? {};
 
-    // Get targets for display
+    final Map<String, dynamic> vocalPlan = 
+        (activities['vocal_card_echo'] as Map<String, dynamic>?) ?? fullPlan;
+
+    final Map<String, dynamic> pairPlan = 
+        (activities['number_pair_sequence'] as Map<String, dynamic>?) ?? fullPlan;
+
+    final Map<String, dynamic> countingPlan = 
+        (activities['number_counting_quest'] as Map<String, dynamic>?) ?? {};
+
+    // Get targets for Vocal Card
     final List<String> targetWords = List<String>.from(
       vocalPlan['targetWords'] ?? 
-      vocalPlan['targetNumbers']?.map((e) => e.toString()) ?? 
-      ['1', '2', '3']
+      vocalPlan['targetNumbers']?.map((e) => e.toString()) ?? ['1', '2', '3']
     );
 
-   final Map<String, dynamic> pairPlan = 
-        (fullPlan['activities'] as Map<String, dynamic>?)?['number_pair_sequence'] 
-        ?? fullPlan;   // ←←← This is the key change
-
-    print("🔍 Pair Plan Loaded: $pairPlan");
-    print("🔍 Has targetPairs? ${pairPlan.containsKey('targetPairs')}");
-    print("🔍 Has targetNumbers? ${pairPlan.containsKey('targetNumbers')}");
-
-    print(" Targets being passed to Vocal Card Echo: $targetWords"); // Debug
-    print("🔍 Pair Plan Loaded: $pairPlan"); // Added for debugging
+    // Debug prints
+    print("🔍 Vocal Plan Loaded: ${vocalPlan['targetNumbers']}");
+    print("🔍 Pair Plan Loaded: ${pairPlan['targetPairs']?.length ?? 'N/A'} pairs");
+    print("🔍 Counting Plan Loaded: ${countingPlan['targetRange'] ?? 'N/A'}");
+    print("🔍 Counting focusNumbers: ${countingPlan['focusNumbers']}");
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -96,7 +99,6 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Number Pair Sequence
                 _buildActivityCard(
                   title: "2. Number Pair Sequence",
                   subtitle: "Practice listening and repeating pairs",
@@ -120,9 +122,23 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
 
                 _buildActivityCard(
                   title: "3. Number Counting Quest",
-                  subtitle: "Count numbers in sequence",
+                  subtitle: countingPlan['targetRange'] != null 
+                      ? "Target: ${countingPlan['targetRange']}" 
+                      : "Count numbers in sequence",
                   icon: Icons.emoji_events,
-                  onTap: () { /* TODO */ },
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NumberCountingQuestPage(
+                          studentName: studentName,
+                          studentId: studentId,
+                          className: className,
+                          plan: countingPlan,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -132,7 +148,6 @@ class StudentPracticeActivitiesPage extends StatelessWidget {
     );
   }
 
-  // _buildActivityCard remains unchanged...
   Widget _buildActivityCard({
     required String title,
     required String subtitle,
