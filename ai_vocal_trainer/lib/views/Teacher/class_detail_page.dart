@@ -1,11 +1,13 @@
 import 'package:ai_vocal_trainer/views/Teacher/customised_learning_path_page.dart';
 
+
 import 'package:flutter/material.dart';
 import 'package:ai_vocal_trainer/core/models/teacher_model.dart';
 import 'package:ai_vocal_trainer/views/Teacher/register_student_page.dart';
 import 'view_registered_students_page.dart';   
 import 'voice_recording_page.dart';
-import 'instructive_exercises_page.dart.dart';
+import 'instructive_exercises_page.dart';
+import 'progress_tracking_page.dart';
 
 class ClassDetailPage extends StatelessWidget {
   final String className;
@@ -188,8 +190,13 @@ class ClassDetailPage extends StatelessWidget {
                   color: softPink,
                   lightPinkBg: lightPinkBg,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Progress Tracking - Coming soon")),
+                    Navigator.push(
+                      context,
+                         MaterialPageRoute(
+                          builder: (_) => ProgressTrackingPage(
+                           className: className,
+                        )
+                      )
                     );
                   },
                 ),

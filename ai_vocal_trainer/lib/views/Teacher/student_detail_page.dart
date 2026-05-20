@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_student_page.dart';
+import 'student_progress_detail_page.dart';   // ← New import
 
 class StudentDetailPage extends StatelessWidget {
   final Map<String, dynamic> studentData;
@@ -54,7 +55,6 @@ class StudentDetailPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-               
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(28),
@@ -77,7 +77,6 @@ class StudentDetailPage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 50),
-
 
                 Container(
                   padding: const EdgeInsets.all(26),
@@ -104,22 +103,27 @@ class StudentDetailPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 62,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Progress for $name - Coming soon"),
-                          backgroundColor: softPink,        
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => StudentProgressDetailPage(
+                            studentId: studentId,
+                            studentName: name,
+                            className: className,
+                          ),
                         ),
                       );
                     },
+                    icon: const Icon(Icons.trending_up_rounded, size: 28),
+                    label: const Text("View Progress", style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: softPink,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
                       elevation: 6,
                     ),
-                    child: const Text("View Progress", style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -148,7 +152,6 @@ class StudentDetailPage extends StatelessWidget {
       ],
     );
   }
-
   void _navigateToEdit(BuildContext context) async {
   final updatedData = await Navigator.push(
     context,

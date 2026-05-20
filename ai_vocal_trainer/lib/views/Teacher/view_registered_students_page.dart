@@ -78,7 +78,6 @@ class ViewRegisteredStudentsPage extends StatelessWidget {
                       const SizedBox(height: 40),
                       ElevatedButton.icon(
                         onPressed: () {
-                          
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -109,7 +108,6 @@ class ViewRegisteredStudentsPage extends StatelessWidget {
                 );
               }
 
-             
               return ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
                 itemCount: students.length,
@@ -149,41 +147,22 @@ class ViewRegisteredStudentsPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildSmallButton(
-                              icon: Icons.info_outline,
-                              label: "Details",
-                              color: softPink,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => StudentDetailPage(
-                                      studentData: studentData,
-                                      studentId: docId,
-                                      className: className,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            _buildSmallButton(
-                              icon: Icons.trending_up,
-                              label: "Progress",
-                              color: softPink,
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Progress for $name - Coming soon"),
-                                    backgroundColor: softPink,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                        _buildSmallButton(
+                          icon: Icons.info_outline,
+                          label: "Details",
+                          color: softPink,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => StudentDetailPage(
+                                  studentData: studentData,
+                                  studentId: docId,
+                                  className: className,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
