@@ -1,9 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'student_list_view.dart';
 
 import '../../viewmodels/user_viewmodel.dart';
 import '../../core/models/user_model.dart';
 import '../User/profile_page.dart';
+import 'student_progress_view.dart';
 
 class ParentDashboard extends StatefulWidget {
   const ParentDashboard({super.key});
@@ -14,10 +15,13 @@ class ParentDashboard extends StatefulWidget {
 
 class _ParentDashboardState extends State<ParentDashboard> {
   final TextEditingController classController = TextEditingController();
+  final TextEditingController studentIdController = TextEditingController();
 
   final UserViewModel _viewModel = UserViewModel();
-
   UserModel? parent;
+
+  // Keep this if you still need it for other logic
+  String? _currentStudentId;
 
   final Color softPink = const Color(0xFFFF6B9D);
   final Color lightPinkBg = const Color(0xFFFFF0F5);
@@ -30,28 +34,80 @@ class _ParentDashboardState extends State<ParentDashboard> {
 
   Future<void> _loadParentData() async {
     final data = await _viewModel.getCurrentUserData();
-
     if (data is UserModel) {
-      setState(() {
-        parent = data;
-      });
+      setState(() => parent = data);
     }
   }
 
   void _navigateToProfile() {
     if (parent == null) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Profile is still loading...")),
-  );
-  return;
-}
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile is still loading...")),
+      );
+      return;
+    }
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ProfilePage(user: parent!),
-      ),
+      MaterialPageRoute(builder: (_) => ProfilePage(user: parent!)),
     );
+  }
+
+  Future<void> _viewStudentProgress() async {
+    final className = classController.text.trim();
+    final studentId = studentIdController.text.trim();
+
+    if (className.isEmpty || studentId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Please enter both Class Name and Student ID"),
+          backgroundColor: softPink,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final studentDoc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(studentId)
+          .get();
+
+      if (!studentDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Student not found"), backgroundColor: Colors.red),
+        );
+        return;
+      }
+
+      final data = studentDoc.data() as Map<String, dynamic>;
+      if (data['className']?.toString().trim() != className) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Student is not in class '$className'"),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      final studentName = data['name'] ?? 'Student';
+
+      setState(() => _currentStudentId = studentId);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StudentProgressView(
+            studentName: studentName,
+            studentId: studentId,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -67,22 +123,15 @@ class _ParentDashboardState extends State<ParentDashboard> {
           IconButton(
             icon: const Icon(Icons.person, size: 28),
             onPressed: _navigateToProfile,
-            tooltip: "My Profile",
           ),
         ],
       ),
       body: Container(
-        height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFB6D1),
-              Color(0xFFFFD6E6),
-              Color(0xFFFFF0F5),
-              Colors.white,
-            ],
+            colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
           ),
         ),
         child: SafeArea(
@@ -99,9 +148,9 @@ class _ParentDashboardState extends State<ParentDashboard> {
                     color: Colors.white.withOpacity(0.95),
                   ),
                 ),
-                const Text(
-                  "Parent",
-                  style: TextStyle(
+                Text(
+                  parent?.name?.split(" ").first ?? "Parent",
+                  style: const TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -109,7 +158,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
                 ),
                 const SizedBox(height: 40),
 
-                // Main Card - Class Details
+                // Main Card
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -143,25 +192,23 @@ class _ParentDashboardState extends State<ParentDashboard> {
                           const SizedBox(width: 16),
                           const Expanded(
                             child: Text(
-                              "Class Details",
+                              "Check Student Progress",
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF4A4A4A),
                               ),
                             ),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 24),
 
                       TextField(
                         controller: classController,
                         textCapitalization: TextCapitalization.words,
                         decoration: InputDecoration(
-                          hintText: "Enter class name (e.g. Class A)",
                           labelText: "Class Name",
+                          hintText: "e.g. Class A",
                           prefixIcon: Icon(Icons.class_, color: softPink),
                           filled: true,
                           fillColor: lightPinkBg,
@@ -169,9 +216,21 @@ class _ParentDashboardState extends State<ParentDashboard> {
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: studentIdController,
+                        decoration: InputDecoration(
+                          labelText: "Student ID",
+                          hintText: "Enter Student ID",
+                          prefixIcon: Icon(Icons.badge, color: softPink),
+                          filled: true,
+                          fillColor: lightPinkBg,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                       ),
@@ -188,32 +247,10 @@ class _ParentDashboardState extends State<ParentDashboard> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(40),
                             ),
-                            elevation: 0,
                           ),
-                          onPressed: () {
-                            final className = classController.text.trim();
-
-                            if (className.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text("Please enter a class name"),
-                                  backgroundColor: softPink,
-                                ),
-                              );
-                              return;
-                            }
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => StudentListView(
-                                  className: className,
-                                ),
-                              ),
-                            );
-                          },
+                          onPressed: _viewStudentProgress,
                           child: const Text(
-                            "View Students",
+                            "View Progress",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -224,13 +261,18 @@ class _ParentDashboardState extends State<ParentDashboard> {
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 40),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    classController.dispose();
+    studentIdController.dispose();
+    super.dispose();
   }
 }

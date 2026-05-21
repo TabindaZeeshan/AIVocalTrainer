@@ -1,5 +1,7 @@
+import 'package:ai_vocal_trainer/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import 'student_practice_activites_page.dart';
 
 class NumberPairResultPage extends StatelessWidget {
@@ -124,7 +126,7 @@ class NumberPairResultPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(context);
               _verifyAndContinue(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF6B9D)),
@@ -153,24 +155,65 @@ class NumberPairResultPage extends StatelessWidget {
         'plan': plan,
         'recordedAt': FieldValue.serverTimestamp(),
       });
-      print("Number Pair Results Saved!");
+      print("✅ Number Pair Results Saved!");
     } catch (e) {
-      print("Save failed: $e");
+      print("❌ Save failed: $e");
     }
   }
 
-  void _verifyAndContinue(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => StudentPracticeActivitiesPage(
-          studentName: studentName,
-          studentId: studentId,
-          className: className,
-          learningPlan: plan,
+  // ==================== VERIFY + SEND NOTIFICATION ====================
+  void _verifyAndContinue(BuildContext context) async {
+    try {
+      await NotificationService.sendPracticeCompletedNotification(
+        studentId: studentId,
+        studentName: studentName,
+        activityType: 'number_pair_sequence',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Result Verified! Parent has been notified."),
+          backgroundColor: Colors.green,
         ),
-      ),
-    );
+      );
+
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentPracticeActivitiesPage(
+              studentName: studentName,
+              studentId: studentId,
+              className: className,
+              learningPlan: plan,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Verification Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Verified but failed to notify: $e"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+
+      // Still navigate even if notification fails
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentPracticeActivitiesPage(
+              studentName: studentName,
+              studentId: studentId,
+              className: className,
+              learningPlan: plan,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _resultCard(Map<String, dynamic> item, Color softPink) {

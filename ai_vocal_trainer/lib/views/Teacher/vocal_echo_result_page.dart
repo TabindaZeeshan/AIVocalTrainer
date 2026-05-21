@@ -1,6 +1,9 @@
+import 'package:ai_vocal_trainer/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import 'student_practice_activites_page.dart';
+
 
 class VocalEchoResultPage extends StatelessWidget {
   final String studentName;
@@ -30,7 +33,6 @@ class VocalEchoResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color softPink = const Color(0xFFFF6B9D);
 
-    // Auto save
     WidgetsBinding.instance.addPostFrameCallback((_) => _saveToFirestore());
 
     return Scaffold(
@@ -112,7 +114,6 @@ class VocalEchoResultPage extends StatelessWidget {
     );
   }
 
-  // ==================== CONFIRMATION DIALOG ====================
   void _showVerifyDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -127,8 +128,8 @@ class VocalEchoResultPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              _verifyAndContinue(context);
+              Navigator.pop(context);
+              _verifyAndContinue(context);   // Fixed calling
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF6B9D)),
             child: const Text("Yes, Verify", style: TextStyle(color: Colors.white)),
@@ -161,19 +162,62 @@ class VocalEchoResultPage extends StatelessWidget {
     }
   }
 
-  void _verifyAndContinue(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => StudentPracticeActivitiesPage(
-          studentName: studentName,
-          studentId: studentId,
-          className: className,
-          learningPlan: plan,
-        ),
+  // ==================== FIXED NAVIGATION ====================
+void _verifyAndContinue(BuildContext context) async {
+  try {
+    // Send simplified notification
+    await NotificationService.sendPracticeCompletedNotification(
+      studentId: studentId,
+      studentName: studentName,
+      activityType: activityType,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Result Verified! Parent has been notified."),
+        backgroundColor: Colors.green,
       ),
     );
+
+    // Navigate back to activities
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StudentPracticeActivitiesPage(
+            studentName: studentName,
+            studentId: studentId,
+            className: className,
+            learningPlan: plan,
+          ),
+        ),
+      );
+    }
+  } catch (e) {
+    print("Verification Error: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Verified but failed to notify: $e"),
+        backgroundColor: Colors.orange,
+      ),
+    );
+
+    // Still navigate
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StudentPracticeActivitiesPage(
+            studentName: studentName,
+            studentId: studentId,
+            className: className,
+            learningPlan: plan,
+          ),
+        ),
+      );
+    }
   }
+}
 
   Widget _resultCard(Map<String, dynamic> item, Color softPink) {
     final bool correct = item['correct'] == true;

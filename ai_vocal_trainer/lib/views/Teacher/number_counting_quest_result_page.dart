@@ -1,3 +1,4 @@
+import 'package:ai_vocal_trainer/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'student_practice_activites_page.dart';
@@ -162,18 +163,57 @@ class NumberCountingQuestResultPage extends StatelessWidget {
     }
   }
 
-  void _verifyAndContinue(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => StudentPracticeActivitiesPage(
-          studentName: studentName,
-          studentId: studentId,
-          className: className,
-          learningPlan: plan,
+  void _verifyAndContinue(BuildContext context) async {
+    try {
+      await NotificationService.sendPracticeCompletedNotification(
+        studentId: studentId,
+        studentName: studentName,
+        activityType: 'number_counting_quest',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Result Verified! Parent has been notified."),
+          backgroundColor: Colors.green,
         ),
-      ),
-    );
+      );
+
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentPracticeActivitiesPage(
+              studentName: studentName,
+              studentId: studentId,
+              className: className,
+              learningPlan: plan,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Verification Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Verified but failed to notify: $e"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentPracticeActivitiesPage(
+              studentName: studentName,
+              studentId: studentId,
+              className: className,
+              learningPlan: plan,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _resultCard(Map<String, dynamic> item, Color softPink) {
