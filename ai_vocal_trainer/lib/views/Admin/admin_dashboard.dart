@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../viewmodels/user_viewmodel.dart';
 import '../../core/models/admin_model.dart';
 import '../User/profile_page.dart';
-import 'admin_student_progress_page.dart';   // ← New Import
+import 'admin_student_progress_page.dart';
+import 'admin_application_usage_page.dart';
+import 'admin_application_metrics_page.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -106,25 +108,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             _buildAdminButton(
                               icon: Icons.trending_up_rounded,
                               title: "View Student Progress",
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStudentProgressPage()));
-                              },
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStudentProgressPage())),
                             ),
-
                             const SizedBox(height: 12),
 
                             _buildAdminButton(
-                              icon: Icons.timeline_rounded,
-                              title: "View Application Usage",
-                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming soon"))),
+                              icon: Icons.people_rounded,
+                              title: "Application Usage",
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminApplicationUsagePage())),
                             ),
-
                             const SizedBox(height: 12),
 
                             _buildAdminButton(
                               icon: Icons.analytics_rounded,
-                              title: "View Application Metrics",
-                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming soon"))),
+                              title: "Application Metrics",
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminApplicationMetricsPage())),
                             ),
                           ],
                         ),
