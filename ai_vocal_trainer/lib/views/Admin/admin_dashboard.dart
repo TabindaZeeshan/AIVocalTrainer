@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/user_viewmodel.dart';
 import '../../core/models/admin_model.dart';
-import '../User/profile_page.dart';   
+import '../User/profile_page.dart';
+import 'admin_student_progress_page.dart';   // ← New Import
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -12,8 +13,7 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   final UserViewModel _viewModel = UserViewModel();
-
-  AdminModel? admin;           
+  AdminModel? admin;
   bool isLoading = true;
 
   final Color softPink = const Color(0xFFFF6B9D);
@@ -27,13 +27,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Future<void> _loadAdminData() async {
     final data = await _viewModel.getCurrentUserData();
-
     if (data is AdminModel) {
-      setState(() {
-        admin = data;
-      });
+      setState(() => admin = data);
     }
-
     setState(() => isLoading = false);
   }
 
@@ -44,13 +40,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       );
       return;
     }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProfilePage(user: admin!),   
-      ),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage(user: admin!)));
   }
 
   @override
@@ -66,7 +56,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
           IconButton(
             icon: const Icon(Icons.person, size: 28),
             onPressed: _navigateToProfile,
-            tooltip: "My Profile",
           ),
         ],
       ),
@@ -76,40 +65,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFB6D1),
-              Color(0xFFFFD6E6),
-              Color(0xFFFFF0F5),
-              Colors.white,
-            ],
+            colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
           ),
         ),
         child: SafeArea(
           child: isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                )
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
               : SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Welcome back,",
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withOpacity(0.95),
-                        ),
-                      ),
-                      Text(
-                        admin?.name.split(" ").first ?? "Admin",
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                      Text("Welcome back,", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.95))),
+                      Text(admin?.name.split(" ").first ?? "Admin", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 40),
 
                       Container(
@@ -117,13 +85,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 15,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 6))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,42 +94,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: lightPinkBg,
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: Icon(
-                                    Icons.admin_panel_settings_rounded,
-                                    size: 36,
-                                    color: softPink,
-                                  ),
+                                  decoration: BoxDecoration(color: lightPinkBg, borderRadius: BorderRadius.circular(18)),
+                                  child: Icon(Icons.admin_panel_settings_rounded, size: 36, color: softPink),
                                 ),
                                 const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Text(
-                                    "Admin Controls",
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF4A4A4A),
-                                    ),
-                                  ),
-                                ),
+                                const Expanded(child: Text("Admin Controls", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
                               ],
                             ),
-
                             const SizedBox(height: 32),
 
                             _buildAdminButton(
                               icon: Icons.trending_up_rounded,
                               title: "View Student Progress",
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text("Student Progress feature coming soon"),
-                                    backgroundColor: softPink,
-                                  ),
-                                );
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminStudentProgressPage()));
                               },
                             ),
 
@@ -176,14 +116,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             _buildAdminButton(
                               icon: Icons.timeline_rounded,
                               title: "View Application Usage",
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text("Application Usage feature coming soon"),
-                                    backgroundColor: softPink,
-                                  ),
-                                );
-                              },
+                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming soon"))),
                             ),
 
                             const SizedBox(height: 12),
@@ -191,20 +124,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             _buildAdminButton(
                               icon: Icons.analytics_rounded,
                               title: "View Application Metrics",
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text("Application Metrics feature coming soon"),
-                                    backgroundColor: softPink,
-                                  ),
-                                );
-                              },
+                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming soon"))),
                             ),
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -213,11 +137,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget _buildAdminButton({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildAdminButton({required IconData icon, required String title, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -225,43 +145,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: lightPinkBg,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: softPink,
-                size: 28,
-              ),
+              decoration: BoxDecoration(color: lightPinkBg, shape: BoxShape.circle),
+              child: Icon(icon, color: softPink, size: 28),
             ),
             const SizedBox(width: 18),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: softPink,
-              size: 20,
-            ),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600))),
+            Icon(Icons.arrow_forward_ios_rounded, color: softPink, size: 20),
           ],
         ),
       ),
