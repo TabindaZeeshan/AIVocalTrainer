@@ -17,7 +17,6 @@ class RuleBasedSpeechTrainer {
       "recommendedFeedback": _generateOverallFeedback(profile, weakNumbers),
       "lastUpdated": DateTime.now().toIso8601String(),
       "weakAreas": weakNumbers,
-
       "activities": {
         "vocal_card_echo": _generateVocalCardEchoPlan(profile, targets),
         "number_pair_sequence": _generateNumberPairPlan(profile, targets),
@@ -29,7 +28,6 @@ class RuleBasedSpeechTrainer {
   // ==================== TARGET LOGIC ====================
   List<int> _getTargets(VoiceProfile profile, List<int> weakNumbers) {
     if (weakNumbers.isNotEmpty) return weakNumbers;
-
     if (profile.overallScore >= 8.0) return [1, 2, 3, 4, 5, 6, 7];
     if (profile.overallScore >= 6.5) return [1, 2, 3, 4, 5, 6, 7, 8, 9];
     return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -37,11 +35,17 @@ class RuleBasedSpeechTrainer {
 
   // ==================== VOCAL CARD ====================
   Map<String, dynamic> _generateVocalCardEchoPlan(
-      VoiceProfile profile, List<int> targets) {
+    VoiceProfile profile,
+    List<int> targets,
+  ) {
     return {
       "stage": "Stage1_VocalCardEcho",
       "activityType": "vocal_card_echo",
-      "difficulty": profile.overallScore >= 8.0 ? "advanced" : profile.overallScore >= 6.0 ? "intermediate" : "beginner",
+      "difficulty": profile.overallScore >= 8.0
+          ? "advanced"
+          : profile.overallScore >= 6.0
+              ? "intermediate"
+              : "beginner",
       "maxAttempts": profile.overallScore >= 8.0 ? 3 : 5,
       "timeLimitSeconds": profile.overallScore >= 8.0 ? 60 : 75,
       "targetNumbers": targets,
@@ -51,11 +55,17 @@ class RuleBasedSpeechTrainer {
 
   // ==================== NUMBER PAIRS ====================
   Map<String, dynamic> _generateNumberPairPlan(
-      VoiceProfile profile, List<int> targets) {
+    VoiceProfile profile,
+    List<int> targets,
+  ) {
     return {
       "stage": "Stage2_NumberPairSequence",
       "activityType": "number_pair_sequence",
-      "difficulty": profile.overallScore >= 8.0 ? "advanced" : profile.overallScore >= 6.0 ? "intermediate" : "beginner",
+      "difficulty": profile.overallScore >= 8.0
+          ? "advanced"
+          : profile.overallScore >= 6.0
+              ? "intermediate"
+              : "beginner",
       "maxAttempts": profile.overallScore >= 8.0 ? 2 : 4,
       "timeLimitSeconds": profile.overallScore >= 8.0 ? 55 : 70,
       "targetPairs": _generatePairs(targets),
@@ -65,8 +75,10 @@ class RuleBasedSpeechTrainer {
 
   // ==================== COUNTING QUEST (UPDATED & MORE DYNAMIC) ====================
   Map<String, dynamic> _generateCountingQuestPlan(
-      VoiceProfile profile, List<int> targets, List<int> weakNumbers) {
-
+    VoiceProfile profile,
+    List<int> targets,
+    List<int> weakNumbers,
+  ) {
     // Use weak numbers first if available, otherwise use main targets
     final focusList = weakNumbers.isNotEmpty ? weakNumbers : targets;
 
@@ -95,10 +107,9 @@ class RuleBasedSpeechTrainer {
       "difficulty": difficulty,
       "maxAttempts": maxAttempts,
       "timeLimitSeconds": timeLimit,
-
       "targetRange": "${focusList.first}-${focusList.last}",
       "focusNumbers": focusList,
-      "recommendedSequence": focusList,   // For future use
+      "recommendedSequence": focusList, // For future use
     };
   }
 
@@ -140,7 +151,9 @@ class RuleBasedSpeechTrainer {
   }
 
   String _generateOverallFeedback(
-      VoiceProfile profile, List<int> weakNumbers) {
+    VoiceProfile profile,
+    List<int> weakNumbers,
+  ) {
     if (weakNumbers.isNotEmpty) {
       return "Focus on: ${weakNumbers.join(", ")}";
     }

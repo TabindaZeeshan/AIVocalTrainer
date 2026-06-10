@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../viewmodels/student_voice_recorder_view_model.dart';
 import 'number_pair_result_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NumberPairSequencePage extends StatefulWidget {
   final String studentName;
@@ -211,47 +212,106 @@ class _NumberPairSequencePageState extends State<NumberPairSequencePage> {
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              title: const Text("Number Pair Sequence"),
+              title: Text(
+  "🌸 Number Pair Sequence 🌸",
+  style: GoogleFonts.fredoka(
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
+    color: const Color.fromARGB(255, 224, 69, 149),
+  ),
+),
               backgroundColor: Colors.transparent,
               elevation: 0,
               foregroundColor: Colors.white,
             ),
             body: Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
-                ),
-              ),
+  image: DecorationImage(
+    image: AssetImage('assets/images/bg2.jpg'),
+    fit: BoxFit.cover,
+  ),
+),
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
                       Text(
-                        "Pair ${currentPairIndex + 1} of ${targetPairs.length}",
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        " 🌷 Pair ${currentPairIndex + 1} of ${targetPairs.length}",
+                        style: GoogleFonts.fredoka(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    shadows: [
+      Shadow(
+        blurRadius: 6,
+        color: Colors.pinkAccent,
+        offset: Offset(2, 2),
+      )
+    ],
+  ),
                       ),
                       const SizedBox(height: 20),
 
                       Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Text(
-                          currentPair,
-                          style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: softPink),
-                        ),
-                      ),
+  width: double.infinity,
+  padding: const EdgeInsets.all(40),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.9),
+    borderRadius: BorderRadius.circular(30),
+    border: Border.all(color: Color(0xFFFFB6D1), width: 3),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.pinkAccent.withOpacity(0.3),
+        blurRadius: 20,
+        offset: Offset(0, 10),
+      )
+    ],
+  ),
+  child: Text(
+    currentPair,
+    textAlign: TextAlign.center,
+    style: GoogleFonts.fredoka(
+      fontSize: 60,
+      fontWeight: FontWeight.w900,
+      color: Color(0xFFFF4F9A),
+      shadows: [
+        Shadow(
+          blurRadius: 10,
+          color: Colors.white,
+          offset: Offset(2, 2),
+        )
+      ],
+    ),
+  ),
+),
 
                       const SizedBox(height: 20),
-                      Text(feedback),
+                      Container(
+  padding: const EdgeInsets.all(18),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.9),
+    borderRadius: BorderRadius.circular(25),
+    border: Border.all(color: Color(0xFFFFB6D1), width: 2),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.pinkAccent.withOpacity(0.25),
+        blurRadius: 15,
+        offset: Offset(0, 6),
+      )
+    ],
+  ),
+  child: Text(
+    feedback,
+    textAlign: TextAlign.center,
+    style: GoogleFonts.luckiestGuy(
+      fontSize: 24,
+      color: Color(0xFFFF4F9A),
+      letterSpacing: 1.5,
+    ),
+  ),
+),
+                      
 
                       const Spacer(),
 
@@ -261,7 +321,11 @@ class _NumberPairSequencePageState extends State<NumberPairSequencePage> {
                             child: ElevatedButton(
                               onPressed: _playPrompt,
                               style: ElevatedButton.styleFrom(backgroundColor: softPink),
-                              child: const Text("Play"),
+                              child: Text("Play", style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  ),),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -272,7 +336,11 @@ class _NumberPairSequencePageState extends State<NumberPairSequencePage> {
                                   : () => _startRecording(vm),
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: vm.isRecording ? Colors.red : softPink),
-                              child: Text(vm.isRecording ? "Stop" : "Record"),
+                              child: Text(vm.isRecording ? "Stop" : "Record", style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  ),),
                             ),
                           ),
                         ],
@@ -283,7 +351,11 @@ class _NumberPairSequencePageState extends State<NumberPairSequencePage> {
                           padding: const EdgeInsets.only(top: 10),
                           child: ElevatedButton(
                             onPressed: isLastPair ? _finish : _next,
-                            child: Text(isLastPair ? "Finish" : "Next"),
+                            child: Text(isLastPair ? "Finish" : "Next", style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: const Color.fromARGB(255, 255, 74, 74),
+  ),),
                           ),
                         ),
                     ],

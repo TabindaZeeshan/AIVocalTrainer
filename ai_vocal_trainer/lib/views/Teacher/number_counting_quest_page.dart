@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../viewmodels/student_voice_recorder_view_model.dart';
 import 'number_counting_quest_result_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NumberCountingQuestPage extends StatefulWidget {
   final String studentName;
@@ -172,19 +173,25 @@ class _NumberCountingQuestPageState extends State<NumberCountingQuestPage> {
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              title: const Text("Number Counting Quest"),
+              title: Text(
+  "🌸 Counting Quest 🌸",
+  style: GoogleFonts.fredoka(
+    fontSize: 30,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  ),
+),
               backgroundColor: Colors.transparent,
               elevation: 0,
               foregroundColor: Colors.white,
             ),
             body: Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
-                ),
-              ),
+  image: DecorationImage(
+    image: AssetImage('assets/images/bg3.jpg'),
+    fit: BoxFit.cover,
+  ),
+),
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -200,20 +207,48 @@ class _NumberCountingQuestPageState extends State<NumberCountingQuestPage> {
                         child: Column(
                           children: [
                             Text("Difficulty: ${difficulty.toUpperCase()}", 
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: softPink)),
+                                style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Color(0xFFFF6B9D),
+  ),),
                             const SizedBox(height: 8),
                             Text(
                               "Count from ${targetSequence.first} to ${targetSequence.last}",
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.baloo2(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: Color(0xFFFF6B9D),
+  ),
                             ),
                           ],
                         ),
                       ),
 
                       const SizedBox(height: 30),
-                      Text(feedback, 
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                          textAlign: TextAlign.center),
+                      Container(
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.9),
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(color: Color(0xFFFFB6D1), width: 2),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.pinkAccent.withOpacity(0.2),
+        blurRadius: 12,
+      )
+    ],
+  ),
+  child: Text(
+    feedback,
+    textAlign: TextAlign.center,
+    style: GoogleFonts.luckiestGuy(
+      fontSize: 17,
+      color: Color(0xFFFF4F9A),
+      letterSpacing: 1.5,
+    ),
+  ),
+),
 
                       const Spacer(),
 
@@ -222,8 +257,20 @@ class _NumberCountingQuestPageState extends State<NumberCountingQuestPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: _playPrompt,
-                              style: ElevatedButton.styleFrom(backgroundColor: softPink),
-                              child: const Text("Play Example"),
+                              style: ElevatedButton.styleFrom(
+  backgroundColor: const Color(0xFFFF6B9D),
+  elevation: 8,
+  shadowColor: Colors.pinkAccent,
+  padding: const EdgeInsets.symmetric(vertical: 16),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(30),
+  ),
+),
+                              child: Text("Play Example",  style: GoogleFonts.luckiestGuy(
+    fontSize: 16,
+    color: Colors.white,
+    letterSpacing: 1.2,
+  ),),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -233,9 +280,19 @@ class _NumberCountingQuestPageState extends State<NumberCountingQuestPage> {
                                   ? () => _stopRecording(vm)
                                   : () => _startRecording(vm),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: vm.isRecording ? Colors.red : softPink,
-                              ),
-                              child: Text(vm.isRecording ? "Stop Recording" : "Start Recording"),
+  backgroundColor: const Color(0xFFFF6B9D),
+  elevation: 8,
+  shadowColor: Colors.pinkAccent,
+  padding: const EdgeInsets.symmetric(vertical: 16),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(30),
+  ),
+),
+                              child: Text(vm.isRecording ? "Stop Recording" : "Start Recording", style: GoogleFonts.luckiestGuy(
+    fontSize: 16,
+    color: Colors.white,
+    letterSpacing: 1.2,
+  ),),
                             ),
                           ),
                         ],
@@ -244,7 +301,18 @@ class _NumberCountingQuestPageState extends State<NumberCountingQuestPage> {
                       const SizedBox(height: 16),
                       Text(
                         "Attempt ${currentAttempt} of $maxAttempts",
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.fredoka(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    shadows: [
+      Shadow(
+        blurRadius: 6,
+        color: Colors.pinkAccent,
+        offset: Offset(2, 2),
+      )
+    ],
+  ),
                       ),
                     ],
                   ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodels/student_voice_recorder_view_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'vocal_echo_result_page.dart';
 
 class VocalCardEchoPage extends StatefulWidget {
@@ -178,19 +179,25 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              title: const Text("Vocal Card Echo"),
+              title: Text(
+               "🌸 Vocal Card Echo 🌸",
+                  style: GoogleFonts.fredoka(
+                    fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                        color: Colors.white,
+                     ),
+                    ),
               backgroundColor: Colors.transparent,
               elevation: 0,
               foregroundColor: Colors.white,
             ),
             body: Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
+                image: DecorationImage(
+                  image: AssetImage('assets/images/bg1.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -200,13 +207,19 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15)],
                         ),
                         child: Text(
                           "Word ${currentWordIndex + 1} of ${targetWords.length}",
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.fredoka(
+                            fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                                color: const Color(0xFFFF6B9D),
+                                
+                            ),
+                            
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -216,18 +229,35 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(40),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15)],
-                        ),
+  color: Colors.white.withOpacity(0.85),
+  borderRadius: BorderRadius.circular(30),
+  border: Border.all(
+    color: const Color(0xFFFFB6D1),
+    width: 3,
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.pink.withOpacity(0.3),
+      blurRadius: 20,
+      offset: const Offset(0, 8),
+    ),
+  ],
+),
                         child: Text(
                           currentWord,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 68,
-                            fontWeight: FontWeight.bold,
-                            color: softPink,
-                          ),
+                         style: GoogleFonts.fredoka(
+                           fontSize: 90,
+                            fontWeight: FontWeight.w900,
+                              color: const Color(0xFFFF4F9A),
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white,
+                                      blurRadius: 10,
+                                        offset: Offset(2, 2),
+                                          ),
+                                        ],
+                                      ),
                         ),
                       ),
 
@@ -245,7 +275,11 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
                         child: Text(
                           feedback,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18, height: 1.4),
+                          style: GoogleFonts.baloo2(
+  fontSize: 22,
+  fontWeight: FontWeight.w600,
+  color: const Color(0xFFFF6B9D),
+),
                         ),
                       ),
 
@@ -258,9 +292,18 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
                             child: ElevatedButton.icon(
                               onPressed: _playPrompt,
                               icon: const Icon(Icons.volume_up),
-                              label: const Text("Play", style: TextStyle(color: Colors.white)),
+                              label: Text(
+  "Play",
+  style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  ),
+),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: softPink,
+                                backgroundColor: const Color(0xFFFF6B9D),
+elevation: 8,
+shadowColor: Colors.pinkAccent,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                               ),
@@ -271,7 +314,11 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
                             child: ElevatedButton.icon(
                               onPressed: vm.isRecording ? () => _stopRecording(vm) : () => _startRecording(vm),
                               icon: Icon(vm.isRecording ? Icons.stop : Icons.mic),
-                              label: Text(vm.isRecording ? "Stop" : "Record", style: const TextStyle(color: Colors.white)),
+                              label: Text(vm.isRecording ? "Stop" : "Record", style: GoogleFonts.fredoka(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+),),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: vm.isRecording ? Colors.red : softPink,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -296,7 +343,11 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
                               ),
                               child: Text(
                                 isLastWord ? "Finish Activity" : "Next Word",
-                                style: const TextStyle(color: Colors.white),
+                                style: GoogleFonts.fredoka(
+  fontSize: 18,
+  fontWeight: FontWeight.bold,
+  color: Colors.white,
+),
                               ),
                             ),
                           ),

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'student_practice_activites_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NumberPairResultPage extends StatelessWidget {
   final String studentName;
@@ -35,19 +36,27 @@ class NumberPairResultPage extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("Activity Result"),
+        title: Text(
+  "🌸 Number Pair Result 🌸",
+  style: GoogleFonts.fredoka(
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
+    color: const Color.fromARGB(255, 224, 69, 149),
+  ),
+),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFB6D1), Color(0xFFFFD6E6), Color(0xFFFFF0F5), Colors.white],
-          ),
-        ),
+  image: DecorationImage(
+    image: AssetImage('assets/images/bg2.jpg'),
+    fit: BoxFit.cover,
+  ),
+),
+        
+        
         child: SafeArea(
           child: Column(
             children: [
@@ -55,15 +64,33 @@ class NumberPairResultPage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(24, 30, 24, 16),
                 child: Text(
                   "Great Job, $studentName! ",
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: softPink),
+                  style: GoogleFonts.fredoka(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFFFF4F9A),
+        ),
                 ),
               ),
 
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text("Detailed Results", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  child: Text(
+  "🌷 Detailed Results",
+  style: GoogleFonts.fredoka(
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    shadows: const [
+      Shadow(
+        blurRadius: 6,
+        color: Colors.pinkAccent,
+        offset: Offset(2, 2),
+      )
+    ],
+  ),
+),
                 ),
               ),
 
@@ -85,8 +112,23 @@ class NumberPairResultPage extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.replay),
-                        label: const Text("Repeat"),
-                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                        label: Text(
+  "Repeat",
+  style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  ),
+),
+                        style: ElevatedButton.styleFrom(
+  backgroundColor: softPink,
+  elevation: 8,
+  shadowColor: Colors.pinkAccent,
+  padding: const EdgeInsets.symmetric(vertical: 18),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(30),
+  ),
+),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -94,11 +136,23 @@ class NumberPairResultPage extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => _showVerifyDialog(context),
                         icon: const Icon(Icons.check),
-                        label: const Text("Verify Result"),
+                        label: Text(
+  "Verify Result",
+  style: GoogleFonts.fredoka(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  ),
+),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: softPink,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
+  backgroundColor: softPink,
+  elevation: 8,
+  shadowColor: Colors.pinkAccent,
+  padding: const EdgeInsets.symmetric(vertical: 18),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(30),
+  ),
+),
                       ),
                     ),
                   ],
