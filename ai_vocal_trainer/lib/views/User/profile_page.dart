@@ -381,12 +381,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       if (firebaseUser == null) return;
 
-      // 1. Update email in Firebase Auth (if changed)
+      
       if (newEmail != firebaseUser.email) {
         await firebaseUser.verifyBeforeUpdateEmail(newEmail);
       }
 
-      // 2. Update Firestore
+      
       await FirebaseFirestore.instance
           .collection('users')
           .doc(firebaseUser.uid)
@@ -396,22 +396,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'email': newEmail,
       });
 
-      // 3. Create new UserModel with updated values (without copyWith)
+      
       final updatedUser = UserModel(
         name: newName,
         username: newUsername,
         email: newEmail, userId: '', userType: '',
-        // IMPORTANT: Add all other fields from your UserModel here
-        // For example:
-        // uid: currentUser.uid,
-        // phone: currentUser.phone,
-        // role: currentUser.role,
-        // createdAt: currentUser.createdAt,
-        // ... copy all other fields from currentUser
+        
       );
 
       if (mounted) {
-        Navigator.pop(context, updatedUser);   // ← This fixes the frontend update
+        Navigator.pop(context, updatedUser);   
       }
     } catch (e) {
       if (mounted) {

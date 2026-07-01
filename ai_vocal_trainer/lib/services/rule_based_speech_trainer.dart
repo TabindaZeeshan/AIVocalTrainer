@@ -25,7 +25,7 @@ class RuleBasedSpeechTrainer {
     };
   }
 
-  // ==================== TARGET LOGIC ====================
+  
   List<int> _getTargets(VoiceProfile profile, List<int> weakNumbers) {
     if (weakNumbers.isNotEmpty) return weakNumbers;
     if (profile.overallScore >= 8.0) return [1, 2, 3, 4, 5, 6, 7];
@@ -33,7 +33,7 @@ class RuleBasedSpeechTrainer {
     return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   }
 
-  // ==================== VOCAL CARD ====================
+  
   Map<String, dynamic> _generateVocalCardEchoPlan(
     VoiceProfile profile,
     List<int> targets,
@@ -53,7 +53,7 @@ class RuleBasedSpeechTrainer {
     };
   }
 
-  // ==================== NUMBER PAIRS ====================
+
   Map<String, dynamic> _generateNumberPairPlan(
     VoiceProfile profile,
     List<int> targets,
@@ -73,16 +73,16 @@ class RuleBasedSpeechTrainer {
     };
   }
 
-  // ==================== COUNTING QUEST (UPDATED & MORE DYNAMIC) ====================
+
   Map<String, dynamic> _generateCountingQuestPlan(
     VoiceProfile profile,
     List<int> targets,
     List<int> weakNumbers,
   ) {
-    // Use weak numbers first if available, otherwise use main targets
+    
     final focusList = weakNumbers.isNotEmpty ? weakNumbers : targets;
 
-    // Adjust difficulty and attempts based on performance
+    
     String difficulty;
     int maxAttempts;
     int timeLimit;
@@ -113,7 +113,7 @@ class RuleBasedSpeechTrainer {
     };
   }
 
-  // ==================== HELPERS ====================
+ 
   List<int> _extractWeakNumbers(List<Map<String, dynamic>> results) {
     Map<int, int> errorCount = {};
 
