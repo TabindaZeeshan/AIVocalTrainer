@@ -119,7 +119,7 @@ class _VocalCardEchoPageState extends State<VocalCardEchoPage> {
     setState(() {
       feedback = correct
           ? " Excellent! ${(score * 100).toStringAsFixed(0)}%"
-          : " You said: '$spoken'";
+          : " You said: '$spoken'  Wrong Number! Please Try Again";
     });
   }
 
