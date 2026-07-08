@@ -8,7 +8,6 @@ import 'register_view.dart';
 import '../Teacher/teacher_dashboard.dart';
 import '../Parent/parent_dashboard.dart';
 
-
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -31,65 +30,202 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-void loginUser() async {
-  setState(() => errorMessage = null);
+  void loginUser() async {
+    setState(() => errorMessage = null);
 
-  final email = emailController.text.trim();
-  final password = passwordController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-  if (email.isEmpty || password.isEmpty) {
-    setState(() => errorMessage = "Please enter email and password");
-    return;
-  }
-
-  setState(() => isLoading = true);
-
-  try {
-    final result = await _viewModel.loginUser(
-      email: email,
-      password: password,
-    );
-
-    if (result == "success") {
-      final userData = await _viewModel.getCurrentUserData();
-
-      if (userData == null) {
-        setState(() => errorMessage = "Failed to load user data");
-        return;
-      }
-
-      if (userData is TeacherModel) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const TeacherDashboard()),
-        );
-      } else if (userData is ParentModel) {
-     
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ParentDashboard()),
-        );
-      } else if (userData is AdminModel) {
-      
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminDashboard()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const TeacherDashboard()),
-        );
-      }
-    } else {
-      setState(() => errorMessage = result);
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => errorMessage = "Please enter email and password");
+      return;
     }
-  } catch (e) {
-    setState(() => errorMessage = "Something went wrong. Please try again.");
-  } finally {
-    setState(() => isLoading = false);
+
+    setState(() => isLoading = true);
+
+    try {
+      final result = await _viewModel.loginUser(
+        email: email,
+        password: password,
+      );
+
+      if (result == "success") {
+        final userData = await _viewModel.getCurrentUserData();
+
+        if (userData == null) {
+          setState(() => errorMessage = "Failed to load user data");
+          return;
+        }
+
+        if (userData is TeacherModel) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+          );
+        } else if (userData is ParentModel) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ParentDashboard()),
+          );
+        } else if (userData is AdminModel) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminDashboard()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+          );
+        }
+      } else {
+        setState(() => errorMessage = result);
+      }
+    } catch (e) {
+      setState(() => errorMessage = "Something went wrong. Please try again.");
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
-}
+
+  // ====================== FORGOT PASSWORD DIALOG ======================
+  Future<void> _showForgotPasswordDialog() async {
+    final TextEditingController dialogEmailController =
+        TextEditingController(text: emailController.text);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+        title: const Text(
+          "Reset Password",
+          style: TextStyle(
+            color: Color(0xFFFF1493),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Enter your registered email address and we'll send you a link to reset your password.",
+              style: TextStyle(
+                fontSize: 15.5,
+                color: Colors.black87,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: dialogEmailController,
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(fontSize: 16),
+                decoration: InputDecoration(
+                  labelText: "Email Address",
+                  labelStyle: const TextStyle(color: Color(0xFFFF1493)),
+                  prefixIcon: const Icon(Icons.email_outlined,
+                      color: Color(0xFFFF1493)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 18, horizontal: 20),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey[700],
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = dialogEmailController.text.trim();
+
+              if (email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Please enter your email"),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+
+              Navigator.pop(context); // Close dialog
+
+              // Show loading feedback
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Sending reset link..."),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+
+              final success = await _viewModel.forgotPassword(email);
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? "Password reset link sent successfully!"
+                          : "Failed to send reset email. Please try again.",
+                    ),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF1493),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(40),
+              ),
+              elevation: 6,
+            ),
+            child: const Text(
+              "Send Reset Link",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  // ============================================================
+
   @override
   void dispose() {
     emailController.dispose();
@@ -165,7 +301,24 @@ void loginUser() async {
                   obscure: true,
                   onChanged: (_) => _clearError(),
                 ),
-                const SizedBox(height: 30),
+
+                // Forgot Password Link
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _showForgotPasswordDialog,
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
 
                 // Error Message
                 if (errorMessage != null)
@@ -187,8 +340,8 @@ void loginUser() async {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline_rounded, 
-                             color: Colors.red, size: 28),
+                        const Icon(Icons.error_outline_rounded,
+                            color: Colors.red, size: 28),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Text(
@@ -205,6 +358,7 @@ void loginUser() async {
                     ),
                   ),
 
+                // Login Button
                 isLoading
                     ? const Center(child: CircularProgressIndicator(color: Colors.white))
                     : ElevatedButton(
@@ -213,12 +367,14 @@ void loginUser() async {
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xFFFF1493),
                           padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40)),
                           elevation: 10,
                         ),
                         child: const Text(
                           "Login",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
 
@@ -270,7 +426,10 @@ void loginUser() async {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: TextField(
@@ -288,7 +447,8 @@ void loginUser() async {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
         ),
       ),
     );

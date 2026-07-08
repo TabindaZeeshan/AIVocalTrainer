@@ -8,6 +8,8 @@ import '../core/models/admin_model.dart';
 class UserViewModel {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  
+  
 
   Future<String> registerUser({
     required String name,
@@ -151,6 +153,18 @@ class UserViewModel {
     } catch (e) {
       print("Error updating gradeName: $e");
       rethrow;
+    }
+  }
+Future<bool> forgotPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return true;
+    } on FirebaseAuthException catch (e) {
+      print("Firebase Auth Error: ${e.message}");
+      return false;
+    } catch (e) {
+      print("Forgot password error: $e");
+      return false;
     }
   }
 }
